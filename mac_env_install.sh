@@ -33,7 +33,6 @@ sudo launchctl unload -w /System/Library/LaunchDaemons/org.apache.httpd.plist
 brew install php
 brew services start php
 brew install httpd24
-brew services start httpd
 
 current_user=$(whoami)
 php7_module_path=$(find /usr/local/Cellar -name libphp7.so)
@@ -49,7 +48,7 @@ sudo sed -i '.'$(date "+%Y-%m-%d")'.bak' \
 ServerName localhost\
 ' \
  -e "$a\
-Include /usr/local/etc/httpd/user/*.conf
+Include /usr/local/etc/httpd/user/*.conf\
 LoadModule php7_module $php7_module_path\
 <FilesMatch \\.php$>\
 SetHandler application/x-httpd-php\
@@ -87,11 +86,6 @@ sudo echo '
         RewriteCond %{REQUEST_FILENAME} !-d
         # 如果请求的不是真实文件或目录，分发请求至 index.php
         RewriteRule . index.php
-
-        # if $showScriptName is false in UrlManager, do not allow accessing URLs with script name
-        RewriteRule ^index.php/ - [L,R=404]
-    
-        # ...其它设置...
     </Directory>
 </VirtualHost>
 
@@ -108,11 +102,6 @@ sudo echo '
         RewriteCond %{REQUEST_FILENAME} !-d
         # 如果请求的不是真实文件或目录，分发请求至 index.php
         RewriteRule . index.php
-
-        # if $showScriptName is false in UrlManager, do not allow accessing URLs with script name
-        RewriteRule ^index.php/ - [L,R=404]
-    
-        # ...其它设置...
     </Directory>
 </VirtualHost>
 
@@ -120,6 +109,8 @@ sudo echo '
 
 sudo sed -i -e '$a\
 127.0.0.1 www.website.com ht.website.com' /etc/hosts
+
+sudo sed -i -e 's/;pcre.jit=1/pcre.jit=0/g' /usr/local/etc/php/7.3/php.ini
 
 sudo sed -i '.'$(date "+%Y-%m-%d")'.bak' \
  -e '$a\
@@ -132,7 +123,8 @@ sudo sed -i '.'$(date "+%Y-%m-%d")'.bak' \
 \
 ' /usr/local/etc/httpd/extra/httpd-vhosts.conf
 
-
+#启动apache
+brew services start httpd
 
 
 # 设置文件权限
@@ -153,25 +145,6 @@ sudo ln -s /usr/local/var/www ~/html
 
 # 测试您的 LAMP Web 服务器
 sudo echo "<?php phpinfo(); " > ~/html/phpinfo.php
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
